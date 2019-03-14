@@ -1,3 +1,5 @@
+#include <string>
+
 class Injector {
 	std::string exeName;
 	std::string dllName;
