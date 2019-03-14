@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
+DWORD GetProcIdByName(std::string);
+
 Injector::Injector() {
 	exeName = "";
 	dllName = "";
@@ -29,37 +31,14 @@ bool Injector::StandardInjector() {
 	DWORD(WINAPI* llAddr)(LPVOID) = nullptr;
 	HMODULE kernel32 = nullptr;
 	HANDLE proc = nullptr;
-	PROCESSENTRY32 entry;
+	DWORD id = 0;
 
 	char* pAddr = nullptr;
 	void* alloc = nullptr;
 	char path[260] = { 0 };
 
-	entry.dwSize = sizeof(PROCESSENTRY32);
-
-	proc = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (!proc) {
-		printf("Failed to create process handle!\n");
-
-		CloseHandle(proc);
-		return false;
-	}
-
-	do {
-		if (!strcmp(entry.szExeFile, exeName.c_str())) {
-			CloseHandle(proc);
-
-			proc = OpenProcess(PROCESS_ALL_ACCESS, false, entry.th32ProcessID);
-			if (!proc) {
-				printf("Failed to open process handle!\n");
-
-				CloseHandle(proc);
-				return false;
-			}
-
-			break;
-		}
-	} while (Process32Next(proc, &entry));
+	id = GetProcIdByName(exeName);
+	proc = OpenProcess(PROCESS_ALL_ACCESS, false, id);
 
 	GetFullPathName(dllName.c_str(), sizeof(path), path, nullptr);
 	pAddr = &path[strlen(path) + 1];
@@ -80,4 +59,29 @@ bool Injector::StandardInjector() {
 
 	CloseHandle(proc);
 	return true;
+}
+
+DWORD GetProcIdByName(std::string name) {
+	HANDLE proc;
+	PROCESSENTRY32 entry;
+
+	entry.dwSize = sizeof(PROCESSENTRY32);
+
+	proc = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (!proc) {
+		printf("Failed to create process handle!\n");
+
+		CloseHandle(proc);
+		return 0;
+	}
+
+	do {
+		if (!strcmp(entry.szExeFile, name.c_str())) {
+			CloseHandle(proc);
+			return entry.th32ProcessID;
+		}
+	} while (Process32Next(proc, &entry));
+
+	CloseHandle(proc);
+	return 0;
 }
