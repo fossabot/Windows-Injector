@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
 		printf("Dll name with extension: ");
 		std::getline(std::cin, dllName);
-		
+
 		printf("Injection type: ");
 		std::cin >> injectionType;
 
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 		return -2;
 	}
 
-	if (!fileExist(dllName)) {
+	if (!FileExist(dllName)) {
 		printf("\nSpecified .dll file does not exist!\n");
 		std::cin.get();
 		return -3;
