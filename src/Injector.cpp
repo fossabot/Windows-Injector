@@ -29,7 +29,7 @@ bool Injector::StandardInjector() {
 	DWORD(WINAPI* llAddr)(LPVOID) = nullptr;
 	HMODULE kernel32 = nullptr;
 	HANDLE proc = nullptr;
-	PROCESSENTRY32 pEntry;
+	PROCESSENTRY32 entry;
 
 	char* pAddr = nullptr;
 	void* alloc = nullptr;
@@ -37,7 +37,7 @@ bool Injector::StandardInjector() {
 
 	entry.dwSize = sizeof(PROCESSENTRY32);
 
-	proc = CreateToolHelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	proc = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (!proc) {
 		printf("Failed to create process handle!\n");
 
@@ -72,11 +72,11 @@ bool Injector::StandardInjector() {
 		return false;
 	}
 
-	address = (DWORD(WINAPI*)(LPVOID))GetProcAddress, kernel32, "LoadLibraryA");
+	llAddr = (DWORD(WINAPI*)(LPVOID))GetProcAddress(kernel32, "LoadLibraryA");
 	alloc = VirtualAllocEx(proc, nullptr, strlen(path), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	
 	WriteProcessMemory(proc, alloc, path, pAddr - &path[1], nullptr);
-	CreateRemoteTherad(proc, nullptr, 0, address, alloc, 0, nullptr);
+	CreateRemoteThread(proc, nullptr, 0, llAddr, alloc, 0, nullptr);
 
 	CloseHandle(proc);
 	return true;
