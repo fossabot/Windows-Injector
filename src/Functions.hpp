@@ -3,5 +3,5 @@
 bool fileExist(std::string path) {
 	DWORD attrib = GetFileAttributes(path.c_str());
 	
-	return (attribute != INVALID_FILE_ATTRIBUTES && !(attribute & FILE_ATTRIBUTE_DIRECTORY));
+	return (attrib != INVALID_FILE_ATTRIBUTES && !(attrib & FILE_ATTRIBUTE_DIRECTORY));
 }
